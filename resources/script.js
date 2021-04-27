@@ -4,18 +4,26 @@ const main = document.getElementById('main')
 const form = document.getElementById('form')
 const search = document.getElementById('search')
 
-// const username = 'aindriu80'
-// getUser(username)
-
 async function getUser(username) {
   try {
     const { data } = await axios(APIURL + username)
     createUserCard(data)
-    // console.log(data)
+    getRepos(username)
   } catch (err) {
     if (err.response.status == 404) {
     }
     createErrorCard('No such user with this username')
+  }
+}
+
+async function getRepos(username) {
+  try {
+    const { data } = await axios(APIURL + username + '/repos?sort=created')
+    addReposToCard(data)
+  } catch (err) {
+    if (err) {
+    }
+    createErrorCard('Problem fetching repos')
   }
 }
 
@@ -34,9 +42,9 @@ function createUserCard(user) {
           <h2>${user.name}</h2>
           <p>${user.bio}</p>
           <ul>
-            <li>${user.followers} <strong>Followers</strong></li>
-            <li>${user.following} <strong>Following</strong></li>
-            <li>${user.public_repos} <strong>Repos</strong></li>
+            <li>${user.followers} <strong> Followers</strong></li>
+            <li>${user.following} <strong> Following</strong></li>
+            <li>${user.public_repos} <strong> Repos</strong></li>
           </ul>
 
           <div id="repos">
@@ -58,6 +66,19 @@ function createErrorCard(msg) {
   main.innerHTML = cardHTML
 }
 
+function addReposToCard(repos) {
+  const reposEl = document.getElementById('repos')
+
+  repos.slice(0, 10).forEach((repo) => {
+    const repoEl = document.createElement('a')
+    repoEl.classList.add('repo')
+    repoEl.href = repo.html_url
+    repoEl.target = '_blank'
+    repoEl.innerText = repo.name
+
+    reposEl.appendChild(repoEl)
+  })
+}
 form.addEventListener('submit', (e) => {
   e.preventDefault()
   const user = search.value
